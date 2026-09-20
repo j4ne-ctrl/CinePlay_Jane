@@ -12,13 +12,33 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  // true kalau username dan password sama-sama sudah diisi
+  bool get _isFilled =>
+      _usernameController.text.trim().isNotEmpty &&
+      _passwordController.text.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    // rebuild layar tiap kali isi kolom berubah, supaya tombol ikut update
+    _usernameController.addListener(() => setState(() {}));
+    _passwordController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _handleLogin() {
-  Navigator.pushReplacementNamed(
-    context,
-    "/main",
-    arguments: _usernameController.text,
-  );
-}
+    Navigator.pushReplacementNamed(
+      context,
+      "/main",
+      arguments: _usernameController.text,
+    );
+  }
 
   InputDecoration _fieldDecoration(String label, IconData icon, {Widget? suffix}) {
     return InputDecoration(
@@ -142,24 +162,32 @@ class _LoginPageState extends State<LoginPage> {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF3D67A), Color.fromARGB(255, 182, 140, 4)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
+                          // emas kalau sudah terisi, abu-abu kalau belum
+                          gradient: _isFilled
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFF3D67A), Color.fromARGB(255, 182, 140, 4)],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                )
+                              : const LinearGradient(
+                                  colors: [Color(0xFF3A3A3A), Color(0xFF2A2A2A)],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
                         ),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(14),
-                            onTap: _handleLogin,
-                            child: const Center(
+                            // null = tombol tidak bisa diklik
+                            onTap: _isFilled ? _handleLogin : null,
+                            child: Center(
                               child: Text(
                                 'LOGIN',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                                  color: _isFilled ? Colors.black : const Color(0xFF8A8A8A),
                                   letterSpacing: 1.2,
                                 ),
                               ),
